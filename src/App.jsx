@@ -5,15 +5,15 @@ import { getMessaging, getToken, onMessage } from "firebase/messaging";
 
 // ─── Firebase ─────────────────────────────────────────────────────────────────
 const firebaseConfig = {
-  apiKey: "AIzaSyB9ubJNp8o_3Bvgx42DNF0SqODIwxtIMYw",
-  authDomain: "forecast-app-52a7b.firebaseapp.com",
-  projectId: "forecast-app-52a7b",
-  storageBucket: "forecast-app-52a7b.firebasestorage.app",
-  messagingSenderId: "141232431293",
-  appId: "1:141232431293:web:33cc7cfa757ecc7a1b57d4"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-const VAPID_KEY = "BBJ-ZVoaefrYpEqB4F23WE02rZEXgF8lXypsovdzFC-dVp6V5Lu6MQaPLwFX0Mk5KjQUZPPUkM6dn3jqAXzwbN8";
+const VAPID_KEY = import.meta.env.VITE_VAPID_KEY;
 
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
