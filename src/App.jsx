@@ -142,8 +142,9 @@ function CirclesGate({ userName, onEnterCircle }) {
   async function joinCircle() {
     if (!joinCode.trim()) return;
     setLoading(true); setError("");
+    const fullCode = `FORE-${joinCode.trim()}`;
     try {
-      const snap = await getDocs(query(collection(db, "circles"), where("code", "==", joinCode.trim().toUpperCase())));
+      const snap = await getDocs(query(collection(db, "circles"), where("code", "==", fullCode.toUpperCase())));
       if (snap.empty) { setError("Code not found — double check and try again."); setLoading(false); return; }
       const circleDoc = snap.docs[0];
       const data = circleDoc.data();
@@ -203,12 +204,17 @@ function CirclesGate({ userName, onEnterCircle }) {
       {mode === "join" && (
         <div className="circles-form">
           <div className="circles-form-title">Enter your join code</div>
-          <input
-            value={joinCode}
-            onChange={e => { setJoinCode(e.target.value); setError(""); }}
-            placeholder="e.g. FORE-4821"
-            onKeyDown={e => e.key === "Enter" && joinCircle()}
-          />
+          <div className="fore-input-row">
+            <span className="fore-prefix">FORE-</span>
+            <input
+              type="number"
+              maxLength={4}
+              value={joinCode}
+              onChange={e => { setJoinCode(e.target.value.slice(0, 4)); setError(""); }}
+              placeholder="4821"
+              onKeyDown={e => e.key === "Enter" && joinCircle()}
+            />
+          </div>
           {error && <div className="circles-error">{error}</div>}
           <div className="circles-form-actions">
             <button className="btn-ghost" onClick={() => { setMode(null); setError(""); }}>Back</button>
@@ -623,16 +629,18 @@ function PlayerView({ teeTimes, circle, userName, onUpdateTeeTimes }) {
         <div className="player-bar-right">
           {!notifEnabled && <button className="btn-notif" onClick={enableNotifs}>Enable Notifications</button>}
           {notifEnabled && (
-            <button className="btn-notif active" onClick={() => setShowPrefs(p => !p)}>
-              {notifPrefs.weekday && notifPrefs.weekend ? "All days" : notifPrefs.weekday ? "Weekdays" : notifPrefs.weekend ? "Weekends" : "Muted"} ▾
-            </button>
+            <div className="notif-toggle-row">
+              <span className="notif-for-label">Notify me for</span>
+              <button className="btn-notif active" onClick={() => setShowPrefs(p => !p)}>
+                {notifPrefs.weekday && notifPrefs.weekend ? "All days" : notifPrefs.weekday ? "Weekdays" : notifPrefs.weekend ? "Weekends" : "Muted"} ▾
+              </button>
+            </div>
           )}
         </div>
       </div>
 
       {showPrefs && notifEnabled && (
         <div className="prefs-panel">
-          <div className="prefs-title">Notify me for</div>
           <div className="prefs-options">
             <label className="pref-option">
               <input type="checkbox" checked={notifPrefs.weekday} onChange={e => saveNotifPrefs({ ...notifPrefs, weekday: e.target.checked })} />
@@ -1052,6 +1060,9 @@ const CSS = `
   .circles-form-actions .btn-ghost { flex: 1; }
   .circles-error { font-size: 0.82rem; color: var(--danger); font-weight: 500; }
   .circles-success { font-size: 0.82rem; color: var(--green); font-weight: 500; }
+  .fore-input-row { display: flex; align-items: center; border: 1.5px solid #d8e4d0; border-radius: 10px; overflow: hidden; background: #fafcf8; }
+  .fore-prefix { padding: 10px 4px 10px 13px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--green); white-space: nowrap; background: #fafcf8; }
+  .fore-input-row input { border: none !important; border-radius: 0 !important; background: transparent !important; padding-left: 4px !important; flex: 1; min-width: 0; }
 
   /* Cards */
   .tee-card { background: white; border-radius: var(--radius); margin: 12px 16px; box-shadow: var(--shadow); overflow: hidden; position: relative; }
@@ -1129,7 +1140,7 @@ const CSS = `
   .field.full, .field.walkon-field { grid-column: 1 / -1; }
   label { font-size: 0.75rem; font-weight: 600; color: var(--ink-light); letter-spacing: 0.3px; }
   .optional { font-weight: 400; opacity: 0.7; }
-  input[type="text"], input[type="number"], input[type="date"], input[type="time"] {
+  input, input[type="text"], input[type="number"], input[type="date"], input[type="time"] {
     padding: 10px 13px; border: 1.5px solid #d8e4d0; border-radius: 10px;
     font-family: 'DM Sans', sans-serif; font-size: 0.95rem; background: #fafcf8 !important;
     outline: none; transition: border 0.15s; color: #0f1a10 !important; -webkit-text-fill-color: #0f1a10 !important;
@@ -1162,19 +1173,20 @@ const CSS = `
   .player-greeting { font-size: 1rem; color: var(--ink-mid); }
   .player-greeting strong { color: var(--green); }
   .player-bar-right { display: flex; align-items: center; gap: 8px; }
+  .notif-toggle-row { display: flex; align-items: center; gap: 6px; }
+  .notif-for-label { font-size: 0.78rem; color: rgba(255,255,255,0.75); font-weight: 500; white-space: nowrap; }
   .btn-notif { padding: 7px 13px; background: #fff8e1; color: #795548; border: 1px solid #ffe082; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
   .btn-notif.active { background: #e8f5e9; color: var(--green); border-color: #a5d6a7; }
-  .prefs-panel { background: white; border-bottom: 1px solid #dcebd4; padding: 14px 16px; }
-  .prefs-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-light); margin-bottom: 12px; }
+  .prefs-panel { background: white; border-bottom: 1px solid #dcebd4; padding: 12px 16px; }
   .prefs-options { display: flex; gap: 20px; }
-  .pref-option { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; font-weight: 500; color: var(--ink-mid); cursor: pointer; }
-  .pref-option input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; appearance: none; -webkit-appearance: none; border: 2px solid var(--green); border-radius: 4px; background: white; position: relative; flex-shrink: 0; }
-  .pref-option input[type="checkbox"]:checked { background: var(--green); }
-  .pref-option input[type="checkbox"]:checked::after { content: '✓'; position: absolute; color: white; font-size: 0.85rem; font-weight: 700; top: 50%; left: 50%; transform: translate(-50%, -52%); }
-  .bringing-toggle { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; font-weight: 500; color: var(--ink-mid); cursor: pointer; padding: 2px 0; }
-  .bringing-toggle input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; appearance: none; -webkit-appearance: none; border: 2px solid var(--green); border-radius: 4px; background: white; position: relative; flex-shrink: 0; }
-  .bringing-toggle input[type="checkbox"]:checked { background: var(--green); }
-  .bringing-toggle input[type="checkbox"]:checked::after { content: '✓'; position: absolute; color: white; font-size: 0.85rem; font-weight: 700; top: 50%; left: 50%; transform: translate(-50%, -52%); }
+  .pref-option { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; font-weight: 500; color: var(--ink-mid); cursor: pointer; user-select: none; }
+  .pref-option input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; appearance: none; -webkit-appearance: none; border: 2.5px solid var(--green); border-radius: 5px; background: white; position: relative; flex-shrink: 0; transition: background 0.15s; }
+  .pref-option input[type="checkbox"]:checked { background: var(--green); border-color: var(--green); }
+  .pref-option input[type="checkbox"]:checked::after { content: ''; position: absolute; left: 6px; top: 2px; width: 6px; height: 11px; border: 2.5px solid white; border-top: none; border-left: none; transform: rotate(45deg); }
+  .bringing-toggle { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; font-weight: 500; color: var(--ink-mid); cursor: pointer; padding: 2px 0; user-select: none; }
+  .bringing-toggle input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; appearance: none; -webkit-appearance: none; border: 2.5px solid var(--green); border-radius: 5px; background: white; position: relative; flex-shrink: 0; transition: background 0.15s; }
+  .bringing-toggle input[type="checkbox"]:checked { background: var(--green); border-color: var(--green); }
+  .bringing-toggle input[type="checkbox"]:checked::after { content: ''; position: absolute; left: 6px; top: 2px; width: 6px; height: 11px; border: 2.5px solid white; border-top: none; border-left: none; transform: rotate(45deg); }
   .friend-section { display: flex; flex-direction: column; gap: 6px; background: #f5f9f3; border: 1.5px solid #c8dfc0; border-radius: 12px; padding: 12px; }
   .friend-input { padding: 9px 12px; border: 1.5px solid #d8e4d0; border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 0.92rem; background: white; outline: none; color: #0f1a10 !important; -webkit-text-fill-color: #0f1a10 !important; }
   .friend-input:focus { border-color: var(--green); }
