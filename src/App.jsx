@@ -952,7 +952,9 @@ export default function App() {
             </div>
             <div className="header-btns">
               {(installPrompt || isIOS) && (
-                <button className="install-btn" onClick={() => isIOS ? setShowInstallBanner(true) : handleInstall()} title="Install App">⬇</button>
+                <button className="install-btn" onClick={() => isIOS ? setShowInstallBanner(true) : handleInstall()} title="Install App">
+                  ⬇ <span className="install-btn-label">Install App</span>
+                </button>
               )}
               <button className="help-btn" onClick={() => setShowHelp(true)}>?</button>
             </div>
@@ -978,12 +980,16 @@ export default function App() {
             <div className="install-banner-content">
               {isIOS ? (
                 <>
-                  <div className="install-banner-title">Add ForeCast to your home screen</div>
-                  <div className="install-banner-sub">Tap <strong>Share</strong> then <strong>"Add to Home Screen"</strong> for the best experience</div>
+                  <div className="install-banner-title">📲 Add ForeCast to your home screen</div>
+                  <div className="install-banner-steps">
+                    <div className="install-step">1. Tap the <strong>Share</strong> button <span className="install-icon">⬆️</span> at the bottom of your browser</div>
+                    <div className="install-step">2. Scroll down and tap <strong>"Add to Home Screen"</strong></div>
+                    <div className="install-step">3. Tap <strong>"Add"</strong> in the top right</div>
+                  </div>
                 </>
               ) : (
                 <>
-                  <div className="install-banner-title">Install ForeCast</div>
+                  <div className="install-banner-title">📲 Install ForeCast</div>
                   <div className="install-banner-sub">Add it to your home screen for the best experience</div>
                 </>
               )}
@@ -1110,13 +1116,17 @@ const CSS = `
   .view-tab.active { background: white; color: var(--green); font-weight: 600; }
   .header-btns { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
   .help-btn { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.35); color: white; font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: 'DM Sans', sans-serif; }
-  .install-btn { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.35); color: white; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .install-btn { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 8px; background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.35); color: white; font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
+  .install-btn-label { font-size: 0.75rem; }
 
-  .install-banner { background: var(--green); color: white; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.15); }
+  .install-banner { background: var(--green); color: white; padding: 12px 16px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.15); }
   .install-banner-content { flex: 1; }
-  .install-banner-title { font-size: 0.88rem; font-weight: 600; margin-bottom: 2px; }
-  .install-banner-sub { font-size: 0.78rem; opacity: 0.85; line-height: 1.4; }
-  .install-banner-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .install-banner-title { font-size: 0.92rem; font-weight: 600; margin-bottom: 8px; }
+  .install-banner-sub { font-size: 0.82rem; opacity: 0.85; line-height: 1.4; }
+  .install-banner-steps { display: flex; flex-direction: column; gap: 5px; }
+  .install-step { font-size: 0.82rem; opacity: 0.9; line-height: 1.4; }
+  .install-icon { font-size: 0.9rem; }
+  .install-banner-actions { display: flex; align-items: flex-start; gap: 8px; flex-shrink: 0; padding-top: 2px; }
   .install-banner-btn { padding: 7px 14px; background: white; color: var(--green); border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
   .install-banner-dismiss { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1rem; cursor: pointer; padding: 4px; line-height: 1; }
 
