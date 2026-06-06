@@ -20,6 +20,16 @@ const db = getFirestore(fbApp);
 let messaging = null;
 try { messaging = getMessaging(fbApp); } catch {}
 
+// Send config to service worker at runtime so no secrets are hardcoded there
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.ready.then(reg => {
+    reg.active?.postMessage({
+      type: 'FIREBASE_CONFIG',
+      config: firebaseConfig
+    });
+  });
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatDateTime(iso) {
   if (!iso) return "";
