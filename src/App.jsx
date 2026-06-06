@@ -220,6 +220,7 @@ function CirclesGate({ userName, onEnterCircle }) {
               type="text"
               inputMode="numeric"
               maxLength={4}
+              autoComplete="off"
               value={joinCode}
               onChange={e => { setJoinCode(e.target.value.replace(/\D/g, "").slice(0, 4)); setError(""); }}
               placeholder="4821"
