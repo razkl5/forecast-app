@@ -808,11 +808,32 @@ export default function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [helpTab, setHelpTab] = useState("player");
   const [showCircleSettings, setShowCircleSettings] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
   const unsubRef = useRef(null);
 
   useEffect(() => {
     const seen = localStorage.getItem("forecast_help_seen");
     if (!seen) { setShowHelp(true); localStorage.setItem("forecast_help_seen", "1"); }
+
+    // Detect iOS
+    const ios = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+    setIsIOS(ios);
+
+    // Check if already installed
+    const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
+    if (isInstalled) return;
+
+    // Show banner on first visit if not dismissed
+    const bannerDismissed = localStorage.getItem("forecast_install_dismissed");
+    if (!bannerDismissed) setShowInstallBanner(true);
+
+    // Android/Chrome install prompt
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    });
   }, []);
 
   useEffect(() => {
@@ -826,6 +847,21 @@ export default function App() {
     });
     return () => { if (unsubRef.current) unsubRef.current(); };
   }, [circle?.id]);
+
+  function handleInstall() {
+    if (installPrompt) {
+      installPrompt.prompt();
+      installPrompt.userChoice.then(() => {
+        setInstallPrompt(null);
+        setShowInstallBanner(false);
+      });
+    }
+  }
+
+  function dismissInstallBanner() {
+    setShowInstallBanner(false);
+    localStorage.setItem("forecast_install_dismissed", "1");
+  }
 
   function saveName() {
     const n = nameInput.trim();
@@ -914,7 +950,12 @@ export default function App() {
                 </button>
               </div>
             </div>
-            <button className="help-btn" onClick={() => setShowHelp(true)}>?</button>
+            <div className="header-btns">
+              {(installPrompt || isIOS) && (
+                <button className="install-btn" onClick={() => isIOS ? setShowInstallBanner(true) : handleInstall()} title="Install App">⬇</button>
+              )}
+              <button className="help-btn" onClick={() => setShowHelp(true)}>?</button>
+            </div>
           </div>
           <div className="view-tabs">
             <button className={`view-tab ${view === "admin" ? "active" : ""}`} onClick={() => setView("admin")}>Post</button>
@@ -930,6 +971,30 @@ export default function App() {
             onRename={handleRename}
             onClose={() => setShowCircleSettings(false)}
           />
+        )}
+
+        {showInstallBanner && (
+          <div className="install-banner">
+            <div className="install-banner-content">
+              {isIOS ? (
+                <>
+                  <div className="install-banner-title">Add ForeCast to your home screen</div>
+                  <div className="install-banner-sub">Tap <strong>Share</strong> then <strong>"Add to Home Screen"</strong> for the best experience</div>
+                </>
+              ) : (
+                <>
+                  <div className="install-banner-title">Install ForeCast</div>
+                  <div className="install-banner-sub">Add it to your home screen for the best experience</div>
+                </>
+              )}
+            </div>
+            <div className="install-banner-actions">
+              {!isIOS && installPrompt && (
+                <button className="install-banner-btn" onClick={handleInstall}>Install</button>
+              )}
+              <button className="install-banner-dismiss" onClick={dismissInstallBanner}>✕</button>
+            </div>
+          </div>
         )}
 
         {loading && <div className="loading">Loading…</div>}
@@ -1043,7 +1108,17 @@ const CSS = `
   .view-tabs { display: flex; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 12px; padding: 3px; gap: 2px; }
   .view-tab { flex: 1; padding: 8px; border: none; background: transparent; color: rgba(255,255,255,0.65); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
   .view-tab.active { background: white; color: var(--green); font-weight: 600; }
-  .help-btn { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.35); color: white; font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 4px; font-family: 'DM Sans', sans-serif; }
+  .header-btns { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+  .help-btn { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.35); color: white; font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: 'DM Sans', sans-serif; }
+  .install-btn { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.35); color: white; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  .install-banner { background: var(--green); color: white; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.15); }
+  .install-banner-content { flex: 1; }
+  .install-banner-title { font-size: 0.88rem; font-weight: 600; margin-bottom: 2px; }
+  .install-banner-sub { font-size: 0.78rem; opacity: 0.85; line-height: 1.4; }
+  .install-banner-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .install-banner-btn { padding: 7px 14px; background: white; color: var(--green); border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .install-banner-dismiss { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1rem; cursor: pointer; padding: 4px; line-height: 1; }
 
   /* Name gate */
   .player-name-gate { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; gap: 10px; padding: 24px; }
