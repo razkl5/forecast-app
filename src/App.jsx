@@ -217,10 +217,11 @@ function CirclesGate({ userName, onEnterCircle }) {
           <div className="fore-input-row">
             <span className="fore-prefix">FORE-</span>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               maxLength={4}
               value={joinCode}
-              onChange={e => { setJoinCode(e.target.value.slice(0, 4)); setError(""); }}
+              onChange={e => { setJoinCode(e.target.value.replace(/\D/g, "").slice(0, 4)); setError(""); }}
               placeholder="4821"
               onKeyDown={e => e.key === "Enter" && joinCircle()}
             />
